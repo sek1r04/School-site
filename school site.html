@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Школа №10 — Карта Знань</title>
+<link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #f2e8c9;
+    --dark-brown: #2c1a0e;
+    --rum: #6b3a2a;
+    --gold: #c9a227;
+    --gold-light: #f0c94a;
+    --ink: #1a0f00;
+    --sea: #1a4a5e;
+    --sea-light: #2d7a9a;
+    --rope: #8b6914;
+    --aged: #d4b896;
+    --shadow: rgba(44,26,14,0.7);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--dark-brown);
+    font-family: 'IM Fell English', serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='4' fill='%23c9a227' stroke='%232c1a0e' stroke-width='2'/%3E%3C/svg%3E") 10 10, crosshair;
+  }
+
+  /* === OCEAN BACKGROUND === */
+  .ocean-bg {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 80%, #0d2d3d 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, #1a4a5e 0%, transparent 60%),
+      linear-gradient(180deg, #0a1a24 0%, #1a3a4e 50%, #0d2030 100%);
+    z-index: -3;
+  }
+
+  .waves {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    z-index: -2;
+    overflow: hidden;
+  }
+
+  .wave {
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%231a4a5e' fill-opacity='0.4' d='M0,60 C360,120 720,0 1080,60 C1260,90 1350,50 1440,60 L1440,120 L0,120 Z'/%3E%3C/svg%3E") repeat-x;
+    animation: wave-move 8s linear infinite;
+  }
+  .wave:nth-child(2) {
+    opacity: 0.5;
+    animation: wave-move 12s linear infinite reverse;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%23122e3e' fill-opacity='0.6' d='M0,40 C480,100 960,0 1440,40 L1440,120 L0,120 Z'/%3E%3C/svg%3E") repeat-x;
+  }
+
+  @keyframes wave-move {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* === STARS === */
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity:0.2; transform:scale(1); }
+    50% { opacity:1; transform:scale(1.4); }
+  }
+
+  /* === NAV === */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, rgba(26,10,0,0.97) 0%, rgba(26,10,0,0.85) 100%);
+    border-bottom: 3px solid var(--gold);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.8);
+  }
+
+  .nav-logo {
+    font-family: 'Uncial Antiqua', cursive;
+    color: var(--gold);
+    font-size: 1.4rem;
+    text-shadow: 0 0 20px rgba(201,162,39,0.8);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .nav-logo .skull { font-size: 1.8rem; animation: bob 2s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{transform:translateY(0) rotate(-5deg);} 50%{transform:translateY(-4px) rotate(5deg);} }
+
+  .nav-links {
+    display: flex;
+    gap: 0.3rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--aged);
+    text-decoration: none;
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+  }
+
+  .nav-links a:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+    background: rgba(201,162,39,0.1);
+    text-shadow: 0 0 10px var(--gold);
+  }
+
+  /* === SECTIONS === */
+  section {
+    display: none;
+    min-height: 100vh;
+    padding: 100px 2rem 4rem;
+    animation: fadeIn 0.6s ease;
+  }
+  section.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+  /* === PARCHMENT CONTAINER === */
+  .parchment {
+    max-width: 900px;
+    margin: 0 auto;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, #f5e6c0 0%, #ede0b8 25%, #f8edd0 50%, #e8d9ae 75%, #f2e4bf 100%);
+    border-radius: 8px;
+    border: 3px solid var(--rum);
+    box-shadow:
+      0 0 0 6px rgba(107,58,42,0.3),
+      0 0 0 10px rgba(201,162,39,0.15),
+      0 20px 80px rgba(0,0,0,0.8),
+      inset 0 0 60px rgba(180,140,80,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .parchment::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(139,105,20,0.08) 28px,
+      rgba(139,105,20,0.08) 29px
+    );
+    pointer-events: none;
+  }
+
+  /* Кути карти */
+  .corner {
+    position: absolute;
+    width: 60px; height: 60px;
+    font-size: 2.5rem;
+    opacity: 0.4;
+    line-height: 1;
+  }
+  .corner.tl { top: 8px; left: 8px; }
+  .corner.tr { top: 8px; right: 8px; transform: scaleX(-1); }
+  .corner.bl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+  .corner.br { bottom: 8px; right: 8px; transform: scale(-1); }
+
+  .parchment-inner { padding: 3rem 3.5rem; }
+
+  /* === HERO === */
+  .hero-title {
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    color: var(--rum);
+    text-align: center;
+    text-shadow: 2px 2px 0 var(--gold), 3px 3px 8px rgba(0,0,0,0.3);
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-sub {
+    font-family: 'Cinzel', serif;
+    text-align: center;
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    color: var(--rope);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  .divider {
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--gold);
+    margin: 1.5rem 0;
+    letter-spacing: 0.5rem;
+    opacity: 0.8;
+  }
+
+  .hero-text {
+    font-size: 1.15rem;
+    line-height: 1.9;
+    color: var(--dark-brown);
+    text-align: justify;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-text em { color: var(--rum); font-style: italic; }
+
+  /* === MAP GRID (навігація на головній) === */
+  .map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .map-card {
+    background: linear-gradient(145deg, rgba(107,58,42,0.12), rgba(201,162,39,0.1));
+    border: 2px solid var(--rum);
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .map-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(201,162,39,0.15));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .map-card:hover {
+    transform: translateY(-5px) rotate(0.5deg);
+    border-color: var(--gold);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(201,162,39,0.2);
+  }
+  .map-card:hover::before { opacity: 1; }
+
+  .map-card .icon { font-size: 2.8rem; display: block; margin-bottom: 0.7rem; }
+  .map-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--rum);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .map-card p { font-size: 0.88rem; color: var(--dark-brown); line-height: 1.5; }
+
+  /* === X MARK === */
+  .x-mark {
+    display: inline-block;
+    color: var(--gold);
+    font-size: 1.5rem;
+    font-weight: bold;
+    animation: pulse-x 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-x { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.6;transform:scale(1.2);} }
+
+  /* === SECTION TITLES === */
+  .section-title {
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--rum);
+    text-align: center;
+    margin-bottom: 0.4rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  }
+
+  /* === NEWS === */
+  .news-list { list-style: none; margin-top: 1.5rem; }
+  .news-item {
+    background: linear-gradient(135deg, rgba(107,58,42,0.08), rgba(201,162,39,0.06));
+    border-left: 4px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.2rem;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .news-item:hover {
+    border-left-color: var(--rum);
+    transform: translateX(5px);
+    background: linear-gradient(135deg, rgba(107,58,42,0.15), rgba(201,162,39,0.1));
+  }
+  .news-date {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: var(--rope);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+  .news-item h3 { font-family: 'Cinzel', serif; font-size: 1.05rem; color: var(--rum); margin-bottom: 0.5rem; }
+  .news-item p { font-size: 0.95rem; color: var(--dark-brown); line-height: 1.7; }
+  .news-badge {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: var(--gold);
+    color: var(--ink);
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* === ABOUT === */
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .about-stat {
+    text-align: center;
+    padding: 1.5rem;
+    border: 2px dashed var(--rope);
+    border-radius: 8px;
+    transition: all 0.3s;
+  }
+  .about-stat:hover { border-style: solid; border-color: var(--gold); background: rgba(201,162,39,0.08); }
+  .about-stat .num {
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: 3rem;
+    color: var(--gold);
+    display: block;
+    line-height: 1;
+    text-shadow: 2px 2px 0 var(--rum);
+  }
+  .about-stat span:last-child {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: var(--rum);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* === KNOWLEDGE (пізнавальне) === */
+  .fact-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .fact-card {
+    background: linear-gradient(145deg, rgba(26,74,94,0.12), rgba(201,162,39,0.08));
+    border: 2px solid var(--sea);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .fact-card:hover {
+    border-color: var(--sea-light);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+  .fact-card .fact-num {
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: 3rem;
+    color: rgba(26,74,94,0.25);
+    position: absolute;
+    top: 0.5rem; right: 1rem;
+    line-height: 1;
+  }
+  .fact-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--sea);
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .fact-card p { font-size: 0.92rem; color: var(--dark-brown); line-height: 1.7; }
+
+  /* === CONTACTS === */
+  .contact-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .contact-item {
+    padding: 1.5rem;
+    border: 2px solid var(--rum);
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .contact-item:hover { border-color: var(--gold); background: rgba(201,162,39,0.08); transform: scale(1.03); }
+  .contact-item .ci-icon { font-size: 2.5rem; display: block; margin-bottom: 0.8rem; }
+  .contact-item h3 { font-family: 'Cinzel', serif; font-size: 0.9rem; text-transform: uppercase; color: var(--rum); margin-bottom: 0.5rem; letter-spacing: 0.08em; }
+  .contact-item p { font-size: 0.95rem; color: var(--dark-brown); line-height: 1.6; }
+
+  /* === COMPASS === */
+  .compass {
+    position: fixed;
+    bottom: 2rem; right: 2rem;
+    width: 60px; height: 60px;
+    background: radial-gradient(circle, var(--gold) 0%, var(--rum) 70%, var(--dark-brown) 100%);
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 0 20px rgba(201,162,39,0.5), 0 4px 15px rgba(0,0,0,0.5);
+    animation: spin-slow 20s linear infinite;
+    z-index: 99;
+    cursor: pointer;
+  }
+  @keyframes spin-slow { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+  /* === SCROLL BAR === */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--dark-brown); }
+  ::-webkit-scrollbar-thumb { background: var(--rum); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+  /* === ROPE BORDER === */
+  .rope-line {
+    height: 8px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--rope) 0px, var(--rope) 8px,
+      rgba(139,105,20,0.3) 8px, rgba(139,105,20,0.3) 12px
+    );
+    border-radius: 4px;
+    margin: 1.5rem 0;
+    opacity: 0.6;
+  }
+
+  /* === QUOTE === */
+  blockquote {
+    border-left: 4px solid var(--gold);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    background: rgba(201,162,39,0.08);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--rum);
+    line-height: 1.8;
+  }
+  blockquote cite {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    font-style: normal;
+    font-family: 'Cinzel', serif;
+    color: var(--rope);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 600px) {
+    nav { padding: 0 1rem; }
+    .nav-links a { padding: 0.4rem 0.5rem; font-size: 0.68rem; }
+    .parchment-inner { padding: 2rem 1.5rem; }
+    section { padding: 90px 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Фон -->
+<div class="ocean-bg"></div>
+<div class="waves">
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
+<div class="stars" id="stars"></div>
+
+<!-- Навігація -->
+<nav>
+  <div class="nav-logo">
+    <span class="skull">☠</span>
+    Школа №10
+  </div>
+  <ul class="nav-links">
+    <li><a href="#" onclick="show('home')">⚓ Головна</a></li>
+    <li><a href="#" onclick="show('news')">📜 Новини</a></li>
+    <li><a href="#" onclick="show('knowledge')">🔭 Пізнавальне</a></li>
+    <li><a href="#" onclick="show('about')">🏴‍☠️ Про нас</a></li>
+    <li><a href="#" onclick="show('contacts')">🗺 Контакти</a></li>
+  </ul>
+</nav>
+
+<!-- ГОЛОВНА -->
+<section id="home" class="active">
+  <div class="parchment">
+    <div class="corner tl">⚓</div>
+    <div class="corner tr">⚓</div>
+    <div class="corner bl">🌊</div>
+    <div class="corner br">🌊</div>
+    <div class="parchment-inner">
+
+      <h1 class="hero-title">Загальноосвітня Школа №10</h1>
+      <p class="hero-sub">✦ Карта знань — шлях до скарбів мудрості ✦</p>
+
+      <div class="divider">⚓ ✦ ☠ ✦ ⚓</div>
+
+      <p class="hero-text">
+        Ласкаво просимо, юний морехід, на борт <em>Корабля Знань</em>!
+        Тут, мов на стародавній піратській карті, заховано безцінні скарби —
+        наука, мистецтво, математика, мови. Кожен урок — це нова земля,
+        кожен вчитель — досвідчений капітан, що веде вас крізь бурхливі
+        хвилі до <em>острова Мудрості</em>.
+      </p>
+
+      <blockquote>
+        Не той пірат, хто грабує кораблі — а той, хто захоплює нові знання
+        та відкриває незвідані береги розуму.
+        <cite>— Девіз нашої школи</cite>
+      </blockquote>
+
+      <div class="rope-line"></div>
+
+      <p class="hero-sub" style="margin-bottom:1rem;">🗺 Оберіть свій курс на карті:</p>
+
+      <div class="map-grid">
+        <div class="map-card" onclick="show('news')">
+          <span class="icon">📜</span>
+          <h3>Новини</h3>
+          <p>Останні вісті з нашого острова — події, перемоги та оголошення</p>
+        </div>
+        <div class="map-card" onclick="show('knowledge')">
+          <span class="icon">🔭</span>
+          <h3>Пізнавальне</h3>
+          <p>Цікаві факти та відкриття для допитливих мореплавців</p>
+        </div>
+        <div class="map-card" onclick="show('about')">
+          <span class="icon">🏴‍☠️</span>
+          <h3>Про нас</h3>
+          <p>Команда нашого корабля та наша місія у світі освіти</p>
+        </div>
+        <div class="map-card" onclick="show('contacts')">
+          <span class="icon">🗺</span>
+          <h3>Контакти</h3>
+          <p>Координати нашої гавані — знайдіть нас на карті міста</p>
+        </div>
+      </div>
+
+      <div class="rope-line"></div>
+      <p style="text-align:center; font-family:'Cinzel',serif; font-size:0.8rem; color:var(--rope); letter-spacing:0.2em;">
+        СКАРБ ТУТ <span class="x-mark">✕</span> 2024–2025 НАВЧАЛЬНИЙ РІК
+      </p>
+
+    </div>
+  </div>
+</section>
+
+<!-- НОВИНИ -->
+<section id="news">
+  <div class="parchment">
+    <div class="corner tl">📜</div>
+    <div class="corner tr">📜</div>
+    <div class="parchment-inner">
+
+      <h2 class="section-title">⚓ Корабельний журнал ⚓</h2>
+      <p class="hero-sub">Останні новини з нашої гавані</p>
+      <div class="rope-line"></div>
+
+      <ul class="news-list">
+        <li class="news-item">
+          <span class="news-badge">🆕 Нове</span>
+          <div class="news-date">📅 15 листопада 2024</div>
+          <h3>🏆 Перемога на олімпіаді з математики!</h3>
+          <p>Наші учні здобули перше місце на міській олімпіаді з математики.
+          Вітаємо 10-А клас та їхніх наставників! Справжні скарбошукачі точних наук!</p>
+        </li>
+        <li class="news-item">
+          <div class="news-date">📅 10 листопада 2024</div>
+          <h3>🎭 Шкільний театральний фестиваль</h3>
+          <p>У великому залі відбувся захопливий фестиваль театрального мистецтва.
+          Учні 9–11 класів підготували яскраві вистави за творами українських класиків.
+          Глядачів чекав справжній скарб культури!</p>
+        </li>
+        <li class="news-item">
+          <div class="news-date">📅 5 листопада 2024</div>
+          <h3>🖥 Новий комп'ютерний клас</h3>
+          <p>Школа поповнилась сучасним обладнанням! У новому комп'ютерному класі
+          учні вивчатимуть програмування, веб-розробку та цифрові технології.
+          Час відкривати нові цифрові горизонти!</p>
+        </li>
+        <li class="news-item">
+          <div class="news-date">📅 28 жовтня 2024</div>
+          <h3>🌍 Міжнародний день толерантності</h3>
+          <p>Наша школа долучилась до всеукраїнських заходів з відзначення
+          Міжнародного дня толерантності. Учні провели урок миру та взаємоповаги.</p>
+        </li>
+        <li class="news-item">
+          <div class="news-date">📅 20 жовтня 2024</div>
+          <h3>📚 Тиждень науки та технологій</h3>
+          <p>Цього тижня в школі відбувся захоплюючий науковий марафон:
+          досліди з хімії, фізичні експерименти та презентації учнівських проєктів.
+          Юні вчені показали свої найкращі відкриття!</p>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</section>
+
+<!-- ПІЗНАВАЛЬНЕ -->
+<section id="knowledge">
+  <div class="parchment">
+    <div class="corner tl">🔭</div>
+    <div class="corner tr">🔭</div>
+    <div class="parchment-inner">
+
+      <h2 class="section-title">🌊 Скарби знань 🌊</h2>
+      <p class="hero-sub">Цікаві факти для допитливих мореплавців</p>
+      <div class="rope-line"></div>
+
+      <p class="hero-text">
+        Знання — це справжній скарб, який ніхто не може вкрасти у тебе.
+        Ось кілька дивовижних фактів, що розширять твої горизонти:
+      </p>
+
+      <div class="fact-cards">
+        <div class="fact-card">
+          <span class="fact-num">01</span>
+          <h3>🧠 Мозок та пам'ять</h3>
+          <p>Людський мозок може зберігати близько 2,5 петабайт інформації —
+          це як 3 мільйони годин відео! А нові нейронні зв'язки утворюються
+          щоразу, коли ти вчишся чогось нового.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">02</span>
+          <h3>🌍 Українська мова</h3>
+          <p>Українська мова — одна з наймелодійніших у Європі! За різними
+          підрахунками, вона посідає друге-третє місце за красою звучання
+          серед слов'янських мов. Нею написано понад 200 000 слів.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">03</span>
+          <h3>⚡ Електрика та фізика</h3>
+          <p>Блискавка має температуру близько 30 000 Кельвінів —
+          це у 5 разів гарячіше за поверхню Сонця!
+          Один удар блискавки містить достатньо енергії,
+          щоб зварити 100 порцій кофе.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">04</span>
+          <h3>🔢 Математичні дива</h3>
+          <p>Число π (пі) містить нескінченну кількість цифр без жодного
+          повторюваного патерну. Деякі математики знають напам'ять
+          понад 70 000 знаків після коми!</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">05</span>
+          <h3>🌱 Біологія та природа</h3>
+          <p>Восьминіг має три серця та блакитну кров. Два серця
+          перекачують кров до зябер, а третє — до решти тіла.
+          При русі два з трьох сердець зупиняються!</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">06</span>
+          <h3>💻 Програмування</h3>
+          <p>Перший комп'ютерний «баг» (помилка) у 1947 році був справжнім
+          жуком-комахою, що застряг у реле машини Mark II.
+          Відтоді слово «bug» означає помилку в коді.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">07</span>
+          <h3>⚗️ Хімія та речовини</h3>
+          <p>Вода — єдина природна речовина, що за нормальних умов
+          існує у трьох агрегатних станах: рідкому, твердому і газоподібному.
+          Без неї неможливе жодне живе існування на Землі.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">08</span>
+          <h3>🗺 Географія України</h3>
+          <p>Україна — найбільша країна, що повністю розташована в Європі!
+          Площа — понад 603 000 км². На її теренах зосереджено
+          близько 25% чорноземів усього світу.</p>
+        </div>
+      </div>
+
+      <div class="rope-line"></div>
+      <blockquote>
+        Той, хто вчиться — мандрує. Той, хто не вчиться — стоїть на місці.
+        А пірат, що стоїть на місці — вже не пірат.
+        <cite>— Мудрість мореплавців</cite>
+      </blockquote>
+
+    </div>
+  </div>
+</section>
+
+<!-- ПРО НАС -->
+<section id="about">
+  <div class="parchment">
+    <div class="corner tl">🏴‍☠️</div>
+    <div class="corner tr">🏴‍☠️</div>
+    <div class="parchment-inner">
+
+      <h2 class="section-title">⚓ Наш Корабель ⚓</h2>
+      <p class="hero-sub">Команда та місія школи №10</p>
+      <div class="rope-line"></div>
+
+      <p class="hero-text">
+        <em>Школа №10</em> — це не просто навчальний заклад. Це справжній
+        корабель знань, що вже понад 50 років плаває у морі освіти.
+        Наша команда — досвідчені капітани-вчителі та відважні
+        юні морехіди-учні, разом ми прокладаємо курс до найвищих вершин знань.
+      </p>
+
+      <div class="about-grid">
+        <div class="about-stat">
+          <span class="num">50+</span>
+          <span>Років роботи</span>
+        </div>
+        <div class="about-stat">
+          <span class="num">800</span>
+          <span>Учнів на борту</span>
+        </div>
+        <div class="about-stat">
+          <span class="num">60</span>
+          <span>Вчителів-капітанів</span>
+        </div>
+        <div class="about-stat">
+          <span class="num">12</span>
+          <span>Предметів-маршрутів</span>
+        </div>
+      </div>
+
+      <div class="rope-line"></div>
+
+      <p class="hero-text">
+        Наша місія — виховати <em>вільних мислителів</em>, здатних орієнтуватися
+        в безмежному океані інформації. Ми навчаємо не просто фактам —
+        ми навчаємо <em>думати, аналізувати і відкривати</em>.
+      </p>
+
+      <div class="map-grid" style="margin-top:1rem;">
+        <div class="map-card">
+          <span class="icon">🎯</span>
+          <h3>Наша місія</h3>
+          <p>Дати кожному учню якісну освіту та підготувати до дорослого життя</p>
+        </div>
+        <div class="map-card">
+          <span class="icon">👁</span>
+          <h3>Наше бачення</h3>
+          <p>Бути школою, де кожна дитина відчуває себе успішною та потрібною</p>
+        </div>
+        <div class="map-card">
+          <span class="icon">💎</span>
+          <h3>Наші цінності</h3>
+          <p>Повага, чесність, творчість і прагнення до знань у всьому</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- КОНТАКТИ -->
+<section id="contacts">
+  <div class="parchment">
+    <div class="corner tl">🗺</div>
+    <div class="corner tr">🗺</div>
+    <div class="parchment-inner">
+
+      <h2 class="section-title">🧭 Координати Гавані 🧭</h2>
+      <p class="hero-sub">Знайдіть нас на карті міста</p>
+      <div class="rope-line"></div>
+
+      <p class="hero-text" style="text-align:center;">
+        Наша гавань завжди відкрита! Ось де нас знайти:
+      </p>
+
+      <div class="contact-info">
+        <div class="contact-item">
+          <span class="ci-icon">📍</span>
+          <h3>Адреса</h3>
+          <p>вул. Шевченка, 42<br>м. Київ, 01001<br>Україна</p>
+        </div>
+        <div class="contact-item">
+          <span class="ci-icon">📞</span>
+          <h3>Телефон</h3>
+          <p>+38 (044) 123-45-67<br>Пн–Пт: 8:00–18:00<br>Сб: 9:00–14:00</p>
+        </div>
+        <div class="contact-item">
+          <span class="ci-icon">📧</span>
+          <h3>Електронна пошта</h3>
+          <p>school10@osvita.ua<br>Відповідаємо<br>протягом доби</p>
+        </div>
+        <div class="contact-item">
+          <span class="ci-icon">🕐</span>
+          <h3>Графік роботи</h3>
+          <p>Пн–Пт: 8:00–18:00<br>Субота: 9:00–14:00<br>Неділя: вихідний</p>
+        </div>
+      </div>
+
+      <div class="rope-line"></div>
+
+      <blockquote style="text-align:center;">
+        Двері нашої гавані завжди відчинені для тих, хто шукає знань!
+        Заходьте, юні морехіди. 🏴‍☠️
+        <cite>— Адміністрація Школи №10</cite>
+      </blockquote>
+
+      <p style="text-align:center; margin-top:1.5rem;">
+        <span style="font-family:'Cinzel',serif; font-size:0.85rem; color:var(--rope); letter-spacing:0.15em;">
+          ⚓ СЛАВА УКРАЇНІ! СЛАВА ЗНАННЯМ! ⚓
+        </span>
+      </p>
+
+    </div>
+  </div>
+</section>
+
+<!-- Компас -->
+<div class="compass" onclick="show('home')" title="На головну">🧭</div>
+
+<script>
+  // Зірки
+  const starsEl = document.getElementById('stars');
+  for(let i = 0; i < 120; i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%;
+      left:${Math.random()*100}%;
+      --d:${(Math.random()*4+1.5).toFixed(1)}s;
+      animation-delay:${(Math.random()*5).toFixed(1)}s;
+    `;
+    starsEl.appendChild(s);
+  }
+
+  // Навігація
+  function show(id){
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+    return false;
+  }
+
+  // Підсвітка активного пункту меню
+  document.querySelectorAll('.nav-links a').forEach((a, i) => {
+    a.addEventListener('click', function(){
+      document.querySelectorAll('.nav-links a').forEach(l => l.style.color = '');
+      this.style.color = 'var(--gold)';
+    });
+  });
+</script>
+</body>
+</html>
